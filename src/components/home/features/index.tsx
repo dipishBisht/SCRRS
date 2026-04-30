@@ -1,44 +1,75 @@
-export default function FeaturesGrid() {
+import SectionHeader from "@/components/common/section-header";
+import {
+  Activity,
+  BarChart3,
+  RouteIcon,
+  ShieldCheck,
+  Users2,
+  Zap,
+} from "lucide-react";
+
+export default function Features() {
   const features = [
     {
-      title: "Smart Routing",
-      desc: "Automatic assignment to IT, Maintenance, or Cleaning based on content.",
-      className: "md:col-span-2",
+      icon: RouteIcon,
+      title: "Smart routing engine",
+      desc: "Keyword and category-based logic auto-assigns every complaint to the right department in milliseconds.",
     },
     {
-      title: "Real-time Tracking",
-      desc: "End-to-end visibility from submission to resolution.",
-      className: "md:col-span-1",
+      icon: Activity,
+      title: "Real-time tracking",
+      desc: "Live status updates and a clean activity timeline keep everyone in sync, from submission to resolution.",
     },
     {
-      title: "Priority Detection",
-      desc: "Urgent issues like leakages or outages are escalated immediately.",
-      className: "md:col-span-1",
+      icon: Users2,
+      title: "Role-based dashboards",
+      desc: "Admins, staff and end-users each get a focused view with the actions and data that matter to them.",
     },
     {
-      title: "Deep Analytics",
-      desc: "Identify recurring hotspots in your facility with heatmap technology.",
-      className: "md:col-span-2",
+      icon: BarChart3,
+      title: "Analytics & insights",
+      desc: "Trends, bottlenecks and SLA metrics — beautifully visualized so you can act with confidence.",
+    },
+    {
+      icon: ShieldCheck,
+      title: "Secure by default",
+      desc: "Granular permissions and audit-ready activity logs so sensitive complaints stay protected.",
+    },
+    {
+      icon: Zap,
+      title: "Lightning fast UX",
+      desc: "A premium interface engineered for speed — your team will actually enjoy using it.",
     },
   ];
 
   return (
-    <section className="py-24 px-6 lg:px-8 max-w-7xl mx-auto">
-      <div className="text-center mb-16">
-        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Built for accountability.</h2>
-        <p className="mt-4 text-muted-foreground">Everything you need to manage institutional operations.</p>
-      </div>
+    <section id="features" className="py-24 sm:py-32">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <SectionHeader
+          eyebrow="Features"
+          title="Everything you need to handle complaints, beautifully."
+          subtitle="A focused toolkit for routing, tracking and resolving complaints — without the bloat."
+        />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {features.map((f, i) => (
-          <div key={i} className={`p-8 rounded-3xl border bg-card/50 hover:bg-card transition-colors flex flex-col justify-between min-h-[240px] ${f.className}`}>
-            <div>
-              <h3 className="text-xl font-semibold mb-2">{f.title}</h3>
-              <p className="text-muted-foreground leading-relaxed">{f.desc}</p>
+        <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((f) => (
+            <div
+              key={f.title}
+              className="group relative overflow-hidden rounded-xl border border-border/60 bg-card p-6 transition-all hover:border-border hover:shadow-lg hover:shadow-primary/5"
+            >
+              <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/15">
+                <f.icon className="h-5 w-5" />
+              </div>
+              <h3 className="mt-4 text-base font-semibold tracking-tight">
+                {f.title}
+              </h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                {f.desc}
+              </p>
             </div>
-            <div className="mt-4 h-2 w-12 bg-primary/20 rounded-full" />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );

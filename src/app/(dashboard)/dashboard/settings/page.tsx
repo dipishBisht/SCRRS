@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { DashboardLayout } from "@/components/dashboard/layout";
+import DashboardLayout from "@/components/dashboard/layout";
 import Header from "@/components/dashboard/header";
 
 export default function Settings() {

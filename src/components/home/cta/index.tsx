@@ -1,17 +1,39 @@
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function CTA() {
   return (
-    <section className="py-24 px-6">
-      <div className="max-w-5xl mx-auto rounded-[3rem] bg-foreground text-background p-12 text-center overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-800 to-transparent opacity-50" />
-        <h2 className="text-4xl font-bold tracking-tight mb-6 relative">Ready to streamline your facility?</h2>
-        <p className="text-zinc-400 max-w-xl mx-auto mb-10 relative">
-          Join 20+ institutions using SCRRS to manage over 10,000+ complaints monthly with 99% accuracy.
+    <section className="px-4 pb-24 sm:px-6 sm:pb-32 lg:px-8">
+      <div className="relative mx-auto w-full max-w-6xl overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-primary/15 via-card to-info/10 px-6 py-16 text-center shadow-xl sm:px-12 sm:py-20">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 opacity-30"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 30% 20%, var(--primary) 0%, transparent 40%), radial-gradient(circle at 70% 80%, var(--info) 0%, transparent 40%)",
+          }}
+        />
+        <h2 className="mx-auto max-w-2xl text-3xl font-semibold tracking-tight text-foreground sm:text-5xl">
+          Start managing complaints smarter.
+        </h2>
+        <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">
+          Join teams that ship resolutions, not excuses. Get started in minutes.
         </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4 relative">
-          <Button size="lg" className="bg-background text-foreground hover:bg-zinc-200 rounded-full px-10">Deploy Now</Button>
-          <Button size="lg" variant="outline" className="border-zinc-700 hover:bg-zinc-800 rounded-full px-10">Talk to Sales</Button>
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Button
+            asChild
+            size="lg"
+            className="h-11 gap-2 px-6 shadow-md shadow-primary/20"
+          >
+            <Link href="/signup">
+              Create your account
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg" className="h-11 px-6">
+            <Link href="/login">Sign in</Link>
+          </Button>
         </div>
       </div>
     </section>

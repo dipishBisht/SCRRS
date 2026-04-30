@@ -1,5 +1,5 @@
 import Header from "@/components/dashboard/header";
-import { DashboardLayout } from "@/components/dashboard/layout";
+import DashboardLayout from "@/components/dashboard/layout";
 import StatsCard from "@/components/dashboard/stats-card";
 import { Button } from "@/components/ui/button";
 import {

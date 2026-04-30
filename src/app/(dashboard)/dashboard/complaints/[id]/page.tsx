@@ -10,10 +10,7 @@ import {
   PlusCircle,
 } from "lucide-react";
 
-import Link from "next/link";
-import { notFound } from "next/navigation";
-
-import { DashboardLayout } from "@/components/dashboard/layout";
+import DashboardLayout from "@/components/dashboard/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +20,8 @@ import {
   PriorityBadge,
 } from "@/components/dashboard/status-badge";
 import { complaints, timeline } from "@/lib/mock-data";
+import Link from "next/link";
+import NotFound from "@/app/not-found";
 
 function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString("en-US", {
@@ -49,24 +48,27 @@ export default async function ComplaintDetail({
   const { id } = await params;
   const complaint = complaints.find((c) => c.id === id);
 
-  if (!complaint) return notFound();
-
+  if (!complaint) return <NotFound />;
+  
   return (
     <DashboardLayout>
       <div className="mx-auto w-full max-w-6xl space-y-6">
-        {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link href="/complaints">
-            <Button variant="ghost" size="sm" className="h-8 -ml-2 gap-1.5">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="h-8 -ml-2 gap-1.5"
+          >
+            <Link href="/dashboard/complaints">
               <ArrowLeft className="h-4 w-4" />
               Back
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <span>·</span>
           <span className="font-mono text-xs">{complaint.id}</span>
         </div>
 
-        {/* Header */}
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold tracking-tight">
@@ -81,7 +83,6 @@ export default async function ComplaintDetail({
               </span>
             </div>
           </div>
-
           <div className="flex gap-2">
             <Button variant="outline" size="sm">
               Reassign
@@ -93,50 +94,46 @@ export default async function ComplaintDetail({
           </div>
         </div>
 
-        {/* Layout */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* LEFT */}
           <div className="space-y-6 lg:col-span-2">
-            {/* Description */}
             <Card>
-              <CardHeader>
+              <CardHeader className="pb-3">
                 <CardTitle className="text-base">Description</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm">{complaint.description}</p>
+                <p className="text-sm leading-relaxed text-foreground/90">
+                  {complaint.description}
+                </p>
               </CardContent>
             </Card>
 
-            {/* Timeline */}
             <Card>
-              <CardHeader>
+              <CardHeader className="pb-3">
                 <CardTitle className="text-base">Activity timeline</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="relative space-y-5 pl-2">
                   <div className="absolute left-[18px] top-2 bottom-2 w-px bg-border" />
-
                   {timeline.map((event) => {
                     const Icon = TYPE_ICON[event.type];
-
                     return (
-                      <div key={event.id} className="flex gap-4">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full border">
+                      <div key={event.id} className="relative flex gap-4">
+                        <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground">
                           <Icon className="h-3.5 w-3.5" />
                         </div>
-
-                        <div className="flex-1">
-                          <div className="flex justify-between">
-                            <p className="text-sm font-medium">{event.title}</p>
-                            <span className="text-xs text-muted-foreground">
+                        <div className="flex-1 pt-0.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm font-medium text-foreground">
+                              {event.title}
+                            </p>
+                            <span className="text-xs text-muted-foreground tabular-nums">
                               {formatDateTime(event.timestamp)}
                             </span>
                           </div>
-
-                          <p className="text-sm text-muted-foreground">
+                          <p className="mt-0.5 text-sm text-muted-foreground">
                             {event.description}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="mt-1 text-xs text-muted-foreground">
                             by {event.actor}
                           </p>
                         </div>
@@ -147,12 +144,14 @@ export default async function ComplaintDetail({
 
                 <Separator className="my-6" />
 
-                {/* Comment */}
                 <div className="space-y-2">
-                  <label className="text-xs text-muted-foreground">
+                  <label className="text-xs font-medium text-muted-foreground">
                     Add a comment
                   </label>
-                  <Textarea placeholder="Write an update…" />
+                  <Textarea
+                    placeholder="Write an update for the team…"
+                    className="min-h-[80px] resize-none"
+                  />
                   <div className="flex justify-end">
                     <Button size="sm">Post update</Button>
                   </div>
@@ -161,9 +160,8 @@ export default async function ComplaintDetail({
             </Card>
           </div>
 
-          {/* RIGHT */}
           <Card className="h-fit">
-            <CardHeader>
+            <CardHeader className="pb-3">
               <CardTitle className="text-base">Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
@@ -193,7 +191,14 @@ export default async function ComplaintDetail({
                 value={formatDateTime(complaint.date)}
               />
               <Separator />
-              <p className="text-sm">{complaint.category}</p>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Category
+                </p>
+                <p className="mt-1 text-sm text-foreground">
+                  {complaint.category}
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -202,15 +207,23 @@ export default async function ComplaintDetail({
   );
 }
 
-function DetailRow({ icon: Icon, label, value }: any) {
+function DetailRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof MapPin;
+  label: string;
+  value: string;
+}) {
   return (
-    <div className="flex gap-3">
-      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
+    <div className="flex items-start gap-3">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
         <Icon className="h-3.5 w-3.5" />
       </div>
-      <div>
+      <div className="min-w-0 flex-1">
         <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-sm font-medium">{value}</p>
+        <p className="truncate text-sm font-medium text-foreground">{value}</p>
       </div>
     </div>
   );

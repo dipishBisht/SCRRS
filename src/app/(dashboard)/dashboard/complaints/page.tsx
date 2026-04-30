@@ -17,7 +17,7 @@ import {
   type ComplaintStatus,
   type Department,
 } from "@/lib/mock-data";
-import { DashboardLayout } from "@/components/dashboard/layout";
+import DashboardLayout from "@/components/dashboard/layout";
 import Header from "@/components/dashboard/header";
 import Link from "next/link";
 import { ComplaintsTable } from "@/components/dashboard/complaints-table";

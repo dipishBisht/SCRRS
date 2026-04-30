@@ -55,7 +55,7 @@ export function ComplaintsTable({ data }: { data: Complaint[] }) {
         {data.map((c) => (
           <TableRow key={c.id} className="border-border/60 group">
             <TableCell className="pl-6 py-3">
-              <Link href={`/complaints/${c.id}`} className="flex flex-col">
+              <Link href={`/dashboard/complaints/${c.id}`} className="flex flex-col">
                 <span className="text-sm font-medium text-foreground line-clamp-1 group-hover:text-primary">
                   {c.title}
                 </span>
