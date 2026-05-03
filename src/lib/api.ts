@@ -148,6 +148,15 @@ export const adminApi = {
     request<{ distribution: Distribution }>("/admin/distribution"),
 };
 
+// Analytics
+
+export const analyticsApi = {
+  stats: () => request<{ stats: AdminStats }>("/analytics/stats"),
+  trends: () => request<{ trend: TrendPoint[] }>("/analytics/trends"),
+  distribution: () => request<{ distribution: Distribution }>("/analytics/distribution"),
+};
+
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type Role = "user" | "admin" | "staff";

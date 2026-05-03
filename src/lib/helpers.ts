@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ApiResponse, Department } from "@/types";
+import { ApiResponse, Department, Priority } from "@/types";
 
 // ─── Response Helpers ─────────────────────────────────────────────────────────
 
@@ -107,4 +107,16 @@ export function paginationMeta(total: number, page: number, limit: number) {
     hasNextPage: page * limit < total,
     hasPrevPage: page > 1,
   };
+}
+
+// Auto Priority Detector
+
+export function detectPriority(title: string, description: string): Priority {
+  const text = `${title} ${description}`.toLowerCase();
+  const urgentKeywords = ["urgent", "asap", "emergency", "critical", "fire", "danger", "immediate"];
+  const highKeywords = ["broken", "not working", "outage", "failure", "severe"];
+
+  if (urgentKeywords.some(kw => text.includes(kw))) return "Urgent";
+  if (highKeywords.some(kw => text.includes(kw))) return "High";
+  return "Medium"; // default
 }

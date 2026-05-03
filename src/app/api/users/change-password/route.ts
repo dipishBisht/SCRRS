@@ -6,11 +6,12 @@ import {
   validatePassword,
 } from "@/lib/helpers";
 import User from "@/models/User";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function PUT(req: NextRequest) {
   try {
-    const userId = req.headers.get("x-user-id");
-    if (!userId) return errorResponse("Unauthorized", 401);
+    const authUser = await getCurrentUser();
+    if (!authUser) return errorResponse("Unauthorized", 401);
 
     const body = await req.json();
     const { currentPassword, newPassword } = body;
@@ -28,7 +29,7 @@ export async function PUT(req: NextRequest) {
 
     await connectDB();
 
-    const user = await User.findById(userId).select("+password");
+    const user = await User.findById(authUser.id).select("+password");
     if (!user) return errorResponse("User not found", 404);
 
     const isMatch = await user.comparePassword(currentPassword);

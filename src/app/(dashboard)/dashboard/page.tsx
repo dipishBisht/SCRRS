@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/dashboard/layout";
 import StatsCard from "@/components/dashboard/stats-card";
 import {
@@ -23,7 +24,6 @@ import {
 } from "@/components/ui/table";
 import { useAuth } from "@/context/auth";
 import { userAccessor } from "@/lib/accessors/UserAccessor";
-import { complaints, resolutionTrend, stats } from "@/lib/mock-data";
 import {
   ArrowRight,
   CheckCircle2,
@@ -35,11 +35,93 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
+import { complaintsApi, analyticsApi, type Complaint } from "@/lib/api";
+import { Skeleton } from "@/components/ui/skeleton";
+
+type TrendPoint = { day: string; submitted: number; resolved: number };
+type AdminStats = {
+  total: number;
+  pending: number;
+  inProgress: number;
+  resolved: number;
+  avgResolutionTime: number; // in hours
+  satisfaction: number;
+  resolutionRate: number;
+};
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { getDisplayName } = userAccessor;
   const name = getDisplayName(user?.name || "");
+
+  const [recentComplaints, setRecentComplaints] = useState<Complaint[]>([]);
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [trend, setTrend] = useState<TrendPoint[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        const [complaintsRes, statsRes, trendRes] = await Promise.all([
+          complaintsApi.list({ limit: 6 }),
+          analyticsApi.stats(),
+          analyticsApi.trends(),
+        ]);
+        if (complaintsRes.success && complaintsRes.data) {
+          setRecentComplaints(complaintsRes.data.complaints);
+        }
+        if (statsRes.success && statsRes.data) {
+          setStats(statsRes.data.stats);
+        }
+        if (trendRes.success && trendRes.data) {
+          setTrend(trendRes.data.trend);
+        }
+      } catch (error) {
+        console.error("Failed to load dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboardData();
+  }, []);
+
+  const formatAvgResolution = (hours?: number) => {
+    if (hours === undefined) return "—";
+    if (hours < 24) return `${Math.round(hours)}h`;
+    const days = Math.floor(hours / 24);
+    const remainingHours = Math.round(hours % 24);
+    return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;
+  };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="mx-auto max-w-7xl space-y-8">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-32 w-full" />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <Skeleton className="lg:col-span-2 h-96" />
+            <div className="space-y-6">
+              <Skeleton className="h-48" />
+              <Skeleton className="h-64" />
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const displayStats = {
+    total: stats?.total ?? 0,
+    pending: stats?.pending ?? 0,
+    resolved: stats?.resolved ?? 0,
+    avgResolution: formatAvgResolution(stats?.avgResolutionTime),
+  };
+
   return (
     <DashboardLayout>
       <div className="mx-auto w-full max-w-7xl space-y-8">
@@ -71,14 +153,14 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatsCard
             label="Total complaints"
-            value={stats.total}
+            value={displayStats.total}
             delta={12}
             hint="vs last week"
             icon={Inbox}
           />
           <StatsCard
             label="Pending"
-            value={stats.pending}
+            value={displayStats.pending}
             delta={-8}
             hint="resolving faster"
             icon={Clock4}
@@ -86,7 +168,7 @@ export default function DashboardPage() {
           />
           <StatsCard
             label="Resolved"
-            value={stats.resolved}
+            value={displayStats.resolved}
             delta={18}
             hint="this week"
             icon={CheckCircle2}
@@ -94,7 +176,7 @@ export default function DashboardPage() {
           />
           <StatsCard
             label="Avg. resolution"
-            value={stats.avgResolution}
+            value={displayStats.avgResolution}
             delta={-14}
             hint="improvement"
             icon={TrendingUp}
@@ -144,10 +226,11 @@ export default function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {complaints.slice(0, 6).map((c) => (
+                  {recentComplaints.map((c) => (
                     <TableRow
-                      key={c.id}
+                      key={c._id}
                       className="border-border/60 cursor-pointer"
+                      onClick={() => (window.location.href = `/dashboard/complaints/${c._id}`)}
                     >
                       <TableCell className="pl-6 py-3">
                         <div className="flex flex-col">
@@ -155,14 +238,12 @@ export default function DashboardPage() {
                             {c.title}
                           </span>
                           <span className="mt-0.5 text-xs text-muted-foreground">
-                            {c.id} · {c.location}
+                            {c.complaintId} · {c.location}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm text-foreground">
-                          {c.department}
-                        </span>
+                        <span className="text-sm text-foreground">{c.department}</span>
                       </TableCell>
                       <TableCell>
                         <PriorityBadge priority={c.priority} />
@@ -172,6 +253,13 @@ export default function DashboardPage() {
                       </TableCell>
                     </TableRow>
                   ))}
+                  {recentComplaints.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                        No complaints found
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -219,53 +307,49 @@ export default function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {resolutionTrend.map((d) => {
-                    const max = Math.max(
-                      ...resolutionTrend.flatMap((x) => [
-                        x.submitted,
-                        x.resolved,
-                      ]),
-                    );
-                    return (
-                      <div
-                        key={d.day}
-                        className="flex items-center gap-3 text-xs"
-                      >
-                        <span className="w-8 text-muted-foreground">
-                          {d.day}
-                        </span>
-                        <div className="flex flex-1 flex-col gap-1">
-                          <div className="h-1.5 rounded-full bg-muted">
-                            <div
-                              className="h-full rounded-full bg-primary/70"
-                              style={{ width: `${(d.submitted / max) * 100}%` }}
-                            />
+                {trend.length > 0 ? (
+                  <>
+                    <div className="space-y-3">
+                      {trend.map((d) => {
+                        const max = Math.max(
+                          ...trend.flatMap((x) => [x.submitted, x.resolved]),
+                        );
+                        return (
+                          <div key={d.day} className="flex items-center gap-3 text-xs">
+                            <span className="w-8 text-muted-foreground">{d.day}</span>
+                            <div className="flex flex-1 flex-col gap-1">
+                              <div className="h-1.5 rounded-full bg-muted">
+                                <div
+                                  className="h-full rounded-full bg-primary/70"
+                                  style={{ width: `${(d.submitted / max) * 100}%` }}
+                                />
+                              </div>
+                              <div className="h-1.5 rounded-full bg-muted">
+                                <div
+                                  className="h-full rounded-full bg-success"
+                                  style={{ width: `${(d.resolved / max) * 100}%` }}
+                                />
+                              </div>
+                            </div>
+                            <span className="w-10 text-right tabular-nums text-muted-foreground">
+                              {d.resolved}/{d.submitted}
+                            </span>
                           </div>
-                          <div className="h-1.5 rounded-full bg-muted">
-                            <div
-                              className="h-full rounded-full bg-success"
-                              style={{ width: `${(d.resolved / max) * 100}%` }}
-                            />
-                          </div>
-                        </div>
-                        <span className="w-10 text-right tabular-nums text-muted-foreground">
-                          {d.resolved}/{d.submitted}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-primary/70" />{" "}
-                    Submitted
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-success" />{" "}
-                    Resolved
-                  </span>
-                </div>
+                        );
+                      })}
+                    </div>
+                    <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-primary/70" /> Submitted
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-success" /> Resolved
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-xs text-muted-foreground">No trend data available</p>
+                )}
               </CardContent>
             </Card>
           </div>

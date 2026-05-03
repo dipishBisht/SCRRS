@@ -6,6 +6,7 @@ import {
   suggestDepartment,
   getPagination,
   paginationMeta,
+  detectPriority,
 } from "@/lib/helpers";
 import Complaint, { getNextComplaintId } from "@/models/Complaint";
 import { createTimelineEvent } from "@/models/Timeline";
@@ -70,13 +71,28 @@ export async function POST(req: NextRequest) {
     if (!authUser) return errorResponse("Unauthorized", 401);
 
     const body = await req.json();
-    const { title, description, category, location, priority, attachments } =
+    const { title, description, category, location, attachments } =
       body;
     let { department } = body;
+
+    const priority = body.priority || detectPriority(title, description);
 
     if (!title || !description || !category || !location) {
       return errorResponse(
         "Title, description, category and location are required",
+      );
+    }
+
+    const existingDuplicate = await Complaint.findOne({
+      submittedBy: authUser.id,
+      title: { $regex: new RegExp(`^${title.trim()}$`, "i") },
+      status: { $ne: "Resolved" },
+      createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, // last 7 days
+    });
+
+    if (existingDuplicate) {
+      return errorResponse(
+        "You already submitted a similar complaint recently. Please check your dashboard.",
       );
     }
 

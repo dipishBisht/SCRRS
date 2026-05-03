@@ -2,11 +2,12 @@ import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/helpers";
 import User from "@/models/User";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function PUT(req: NextRequest) {
   try {
-    const userId = req.headers.get("x-user-id");
-    if (!userId) return errorResponse("Unauthorized", 401);
+    const authUser = await getCurrentUser();
+    if (!authUser) return errorResponse("Unauthorized", 401);
 
     const body = await req.json();
     const { name, department } = body;
@@ -18,7 +19,7 @@ export async function PUT(req: NextRequest) {
     await connectDB();
 
     const user = await User.findByIdAndUpdate(
-      userId,
+      authUser.id,
       { name: name.trim(), department: department ?? undefined },
       { new: true, runValidators: true },
     );

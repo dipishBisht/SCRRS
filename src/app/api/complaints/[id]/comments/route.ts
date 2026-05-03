@@ -10,14 +10,16 @@ import { Types } from "mongoose";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const authUser = await getCurrentUser();
     if (!authUser) return errorResponse("Unauthorized", 401);
 
+    const { id } = await params;
+
     await connectDB();
-    const complaint = await Complaint.findById(params.id);
+    const complaint = await Complaint.findById(id);
     if (!complaint) return errorResponse("Complaint not found", 404);
     if (
       authUser.role === "user" &&
@@ -26,7 +28,7 @@ export async function GET(
       return errorResponse("Access denied", 403);
     }
 
-    const comments = await Comment.find({ complaintId: params.id })
+    const comments = await Comment.find({ complaintId: id })
       .populate("userId", "name email role")
       .sort({ createdAt: 1 });
     return successResponse({ comments });
@@ -37,18 +39,20 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const authUser = await getCurrentUser();
     if (!authUser) return errorResponse("Unauthorized", 401);
+
+    const { id } = await params;
 
     const { message } = await req.json();
     if (!message?.trim()) return errorResponse("Message is required");
 
     await connectDB();
 
-    const complaint = await Complaint.findById(params.id);
+    const complaint = await Complaint.findById(id);
     if (!complaint) return errorResponse("Complaint not found", 404);
     if (
       authUser.role === "user" &&
@@ -58,14 +62,14 @@ export async function POST(
     }
 
     const comment = await Comment.create({
-      complaintId: params.id,
+      complaintId: id,
       userId: new Types.ObjectId(authUser.id),
       message: message.trim(),
     });
 
     const actor = await User.findById(authUser.id).select("name");
     await createTimelineEvent({
-      complaintId: params.id,
+      complaintId: id,
       type: "comment",
       title: "Comment Added",
       description: `${actor?.name ?? "User"} added a comment`,
