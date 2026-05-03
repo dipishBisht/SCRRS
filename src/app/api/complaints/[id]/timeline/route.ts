@@ -3,26 +3,22 @@ import { connectDB } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/helpers";
 import Timeline from "@/models/Timeline";
 import Complaint from "@/models/Complaint";
+import { getCurrentUser } from "@/lib/auth";
 
-interface RouteContext {
-  params: { id: string };
-}
-
-export async function GET(req: NextRequest, { params }: RouteContext) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } },
+) {
   try {
-    const userId = req.headers.get("x-user-id");
-    const userRole = req.headers.get("x-user-role");
-    if (!userId) return errorResponse("Unauthorized", 401);
+    const authUser = await getCurrentUser();
+    if (!authUser) return errorResponse("Unauthorized", 401);
 
     await connectDB();
-
     const complaint = await Complaint.findById(params.id);
     if (!complaint) return errorResponse("Complaint not found", 404);
-
-    // Users can only view timeline for their own complaints
     if (
-      userRole === "user" &&
-      complaint.submittedBy.toString() !== userId
+      authUser.role === "user" &&
+      complaint.submittedBy.toString() !== authUser.id
     ) {
       return errorResponse("Access denied", 403);
     }
@@ -30,7 +26,6 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
     const timeline = await Timeline.find({ complaintId: params.id }).sort({
       timestamp: 1,
     });
-
     return successResponse({ timeline });
   } catch {
     return errorResponse("Failed to fetch timeline", 500);

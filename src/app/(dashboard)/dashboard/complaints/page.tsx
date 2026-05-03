@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Search, PlusCircle, Filter, Download } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,17 +12,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  complaints,
-  type ComplaintStatus,
-  type Department,
-} from "@/lib/mock-data";
 import DashboardLayout from "@/components/dashboard/layout";
 import Header from "@/components/dashboard/header";
 import Link from "next/link";
 import { ComplaintsTable } from "@/components/dashboard/complaints-table";
+import { useComplaints } from "@/hooks/use-complaint";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const TABS: { label: string; value: "all" | ComplaintStatus }[] = [
+const TABS = [
   { label: "All", value: "all" },
   { label: "Pending", value: "Pending" },
   { label: "In Progress", value: "In Progress" },
@@ -30,28 +27,33 @@ const TABS: { label: string; value: "all" | ComplaintStatus }[] = [
 ];
 
 export default function Complaints() {
-  const [query, setQuery] = useState("");
-  const [tab, setTab] = useState<"all" | ComplaintStatus>("all");
-  const [department, setDepartment] = useState<"all" | Department>("all");
-  const [priority, setPriority] = useState<string>("all");
+  const { complaints, pagination, filters, loading, updateFilter, setPage, deleteComplaint } = useComplaints();
+  const [searchInput, setSearchInput] = useState(filters.search);
 
-  const filtered = useMemo(() => {
-    return complaints.filter((c) => {
-      if (tab !== "all" && c.status !== tab) return false;
-      if (department !== "all" && c.department !== department) return false;
-      if (priority !== "all" && c.priority !== priority) return false;
-      if (query) {
-        const q = query.toLowerCase();
-        if (
-          !c.title.toLowerCase().includes(q) &&
-          !c.id.toLowerCase().includes(q) &&
-          !c.location.toLowerCase().includes(q)
-        )
-          return false;
-      }
-      return true;
-    });
-  }, [query, tab, department, priority]);
+  const handleSearch = () => {
+    updateFilter("search", searchInput);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleSearch();
+  };
+
+  if (loading && complaints.length === 0) {
+    return (
+      <DashboardLayout>
+        <div className="mx-auto w-full max-w-7xl space-y-6">
+          <Skeleton className="h-10 w-48" />
+          <Card>
+            <div className="p-4 space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -77,14 +79,13 @@ export default function Complaints() {
 
         <Card>
           <div className="flex flex-col gap-3 border-b border-border/60 p-4 md:flex-row md:items-center md:justify-between">
-            <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
+            <Tabs
+              value={filters.status === "all" ? "all" : filters.status}
+              onValueChange={(v) => updateFilter("status", v === "all" ? "" : v)}
+            >
               <TabsList>
                 {TABS.map((t) => (
-                  <TabsTrigger
-                    key={t.value}
-                    value={t.value}
-                    className="text-xs"
-                  >
+                  <TabsTrigger key={t.value} value={t.value} className="text-xs">
                     {t.label}
                   </TabsTrigger>
                 ))}
@@ -95,15 +96,17 @@ export default function Complaints() {
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onBlur={handleSearch}
                   placeholder="Search tickets…"
                   className="h-9 w-full pl-9 sm:w-[240px]"
                 />
               </div>
               <Select
-                value={department}
-                onValueChange={(v) => setDepartment(v as typeof department)}
+                value={filters.department || "all"}
+                onValueChange={(v) => updateFilter("department", v === "all" ? "" : v)}
               >
                 <SelectTrigger className="h-9 w-[150px]">
                   <Filter className="h-3.5 w-3.5 text-muted-foreground" />
@@ -117,7 +120,10 @@ export default function Complaints() {
                   <SelectItem value="Cleaning">Cleaning</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={priority} onValueChange={setPriority}>
+              <Select
+                value={filters.priority || "all"}
+                onValueChange={(v) => updateFilter("priority", v === "all" ? "" : v)}
+              >
                 <SelectTrigger className="h-9 w-[130px]">
                   <SelectValue placeholder="Priority" />
                 </SelectTrigger>
@@ -133,21 +139,20 @@ export default function Complaints() {
           </div>
 
           <CardContent className="px-0 pb-0">
-            <ComplaintsTable data={filtered} />
+            <ComplaintsTable data={complaints} onDelete={deleteComplaint} />
             <div className="flex items-center justify-between border-t border-border/60 px-6 py-3 text-xs text-muted-foreground">
               <span>
                 Showing{" "}
-                <span className="font-medium text-foreground">
-                  {filtered.length}
-                </span>{" "}
-                of {complaints.length} complaints
+                <span className="font-medium text-foreground">{complaints.length}</span>{" "}
+                of {pagination?.total ?? 0} complaints
               </span>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   className="h-7 text-xs"
-                  disabled
+                  disabled={!pagination?.hasPrevPage}
+                  onClick={() => setPage((p) => p - 1)}
                 >
                   Previous
                 </Button>
@@ -155,7 +160,8 @@ export default function Complaints() {
                   variant="outline"
                   size="sm"
                   className="h-7 text-xs"
-                  disabled
+                  disabled={!pagination?.hasNextPage}
+                  onClick={() => setPage((p) => p + 1)}
                 >
                   Next
                 </Button>

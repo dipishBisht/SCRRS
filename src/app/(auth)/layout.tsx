@@ -82,16 +82,16 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             </div>
             <span className="text-sm font-semibold">SCRRS</span>
           </Link>
+        </div>
+
+        <div className="flex flex-col items-start h-full px-6 py-12">
           <Link
             href="/"
             className="text-xs text-muted-foreground hover:text-foreground"
           >
             ← Back home
           </Link>
-        </div>
-
-        <div className="flex flex-1 items-center justify-center px-6 py-12">
-          <div className="w-full max-w-sm">
+          <div className="w-full mx-auto max-w-sm my-auto">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">
                 Welcome back

@@ -1,27 +1,13 @@
-import jwt from "jsonwebtoken";
+"use server";
 import { cookies } from "next/headers";
-import { JWTPayload, Role } from "@/types";
+import { JWTPayload } from "@/types";
+import { verifyToken } from "./auth-client";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
-const JWT_EXPIRES_IN = "7d";
 const COOKIE_NAME = "scrrs_token";
 
 if (!JWT_SECRET) {
   throw new Error("Please define JWT_SECRET in your .env.local file");
-}
-
-// ─── Token Generation ────────────────────────────────────────────────────────
-
-export function signToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-}
-
-export function verifyToken(token: string): JWTPayload | null {
-  try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
-  } catch {
-    return null;
-  }
 }
 
 // ─── Cookie Helpers ──────────────────────────────────────────────────────────
@@ -58,15 +44,3 @@ export async function getCurrentUser(): Promise<JWTPayload | null> {
   if (!token) return null;
   return verifyToken(token);
 }
-
-// ─── Role Guards ─────────────────────────────────────────────────────────────
-
-export function requireRole(...roles: Role[]) {
-  return (user: JWTPayload | null): user is JWTPayload => {
-    if (!user) return false;
-    return roles.includes(user.role);
-  };
-}
-
-export const isAdmin = requireRole("admin");
-export const isStaff = requireRole("admin", "staff");

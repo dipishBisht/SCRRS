@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
-import { signToken, setAuthCookie } from "@/lib/auth";
+import { setAuthCookie } from "@/lib/auth";
 import { successResponse, errorResponse, validateEmail } from "@/lib/helpers";
 import User from "@/models/User";
+import { signToken } from "@/lib/auth-client";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     if (!isMatch) return errorResponse("Invalid email or password", 401);
 
     const token = signToken({ id: user._id.toString(), email: user.email, role: user.role });
-    setAuthCookie(token);
+    await setAuthCookie(token);
 
     return successResponse(
       {

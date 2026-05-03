@@ -32,7 +32,7 @@ export default function CTA() {
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="h-11 px-6">
-            <Link href="/login">Sign in</Link>
+            <Link href="/login">Login</Link>
           </Button>
         </div>
       </div>

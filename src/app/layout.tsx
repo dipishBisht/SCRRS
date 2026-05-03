@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { AuthProvider } from "@/context/auth";
 
 const balooBhaijaan2 = Baloo_Bhaijaan_2({
   variable: "--font-baloo-bhaijaan-2",
@@ -23,8 +24,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn(balooBhaijaan2.className)}>
       <body className="min-h-full flex flex-col">
-        <TooltipProvider>{children}</TooltipProvider>
-        <Toaster />
+        <AuthProvider>
+          <TooltipProvider>
+            {children}
+            </TooltipProvider>
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

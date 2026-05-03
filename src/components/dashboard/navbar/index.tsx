@@ -1,17 +1,23 @@
-import { Bell, Search, Plus } from "lucide-react";
-import Link from "next/link";
+"use client";
+import { Bell, Search } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/auth";
+import { userAccessor } from "@/lib/accessors/UserAccessor";
 
 export default function Navbar() {
+
+  const {user}=useAuth();
+  const {getShortName}=userAccessor;
+  const shortName=getShortName(user?.name || "");
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-md">
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-2 items-center w-full">
         <div className="flex items-center">
           <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="h-5" />
+          <Separator orientation="vertical" className="h-7" />
         </div>
 
         <div className="relative hidden flex-1 max-w-md md:block">
@@ -27,18 +33,12 @@ export default function Navbar() {
       </div>
 
       <div className="flex flex-1 items-center justify-end gap-2 md:flex-none">
-        <Button asChild size="sm" className="h-9 gap-1.5 shadow-sm">
-          <Link href="/dashboard/submit-complaint">
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">New Complaint</span>
-          </Link>
-        </Button>
         <Button variant="ghost" size="icon" className="relative h-9 w-9">
           <Bell className="h-4 w-4" />
           <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-destructive" />
         </Button>
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/60 text-xs font-semibold text-primary-foreground">
-          AM
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-primary to-primary/60 text-xs font-semibold text-primary-foreground">
+          {shortName}
         </div>
       </div>
     </header>

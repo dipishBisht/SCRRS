@@ -1,19 +1,25 @@
-import { NextRequest } from "next/server";
+import { verifyToken } from "@/lib/auth-client";
 import { connectDB } from "@/lib/db";
-import { successResponse, errorResponse } from "@/lib/helpers";
+import { errorResponse, successResponse } from "@/lib/helpers";
 import User from "@/models/User";
+import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
-    const userId = req.headers.get("x-user-id");
-    if (!userId) return errorResponse("Unauthorized", 401);
+    const token = req.cookies.get("scrrs_token")?.value;
+    if (!token) return errorResponse("Unauthorized", 401);
+
+    const decoded = verifyToken(token);
+
+    if (!decoded) return errorResponse("Unauthorized", 401);
 
     await connectDB();
-    const user = await User.findById(userId);
+    const user = await User.findById(decoded?.id);
+
     if (!user) return errorResponse("User not found", 404);
 
     return successResponse({ user });
   } catch {
-    return errorResponse("Failed to fetch user", 500);
+    return errorResponse("Unauthorized", 401);
   }
 }

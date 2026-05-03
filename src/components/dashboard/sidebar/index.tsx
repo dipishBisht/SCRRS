@@ -7,6 +7,7 @@ import {
   BarChart3,
   Settings,
   ShieldCheck,
+  LogOut,
 } from "lucide-react";
 
 import {
@@ -23,21 +24,53 @@ import {
 } from "@/components/ui/sidebar";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/context/auth";
+import { userAccessor } from "@/lib/accessors/UserAccessor";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { clearAuthCookie } from "@/lib/auth";
+import { toast } from "sonner";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Complaints", url: "/dashboard/complaints", icon: Inbox },
-  { title: "Submit Complaint", url: "/dashboard/submit-complaint", icon: PlusCircle },
+  {
+    title: "Submit Complaint",
+    url: "/dashboard/submit-complaint",
+    icon: PlusCircle,
+  },
   { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
+  const router=useRouter();
+  const { user } = useAuth();
+  const { getShortName, getDisplayName } = userAccessor;
+  const name = user?.name || "";
+
+  const shortName = getShortName(name);
+  const displayName = getDisplayName(name);
 
   const isActive = (path: string) =>
     path === "/" ? pathname === "/" : pathname.startsWith(path);
+
+
+  async function logout(){
+    try {
+      await clearAuthCookie();
+      router.push("/");
+      toast.success("Successfully logged out.");
+    } catch (error) {
+      toast.error("Failed to logout. Please try again.");
+    }
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -80,17 +113,30 @@ export default function DashboardSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
-        <div className="flex items-center gap-2.5 px-2 py-1.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary to-primary/60 text-xs font-semibold text-primary-foreground">
-            AM
-          </div>
-          <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
-            <span className="truncate text-sm font-medium">Aarav Mehta</span>
-            <span className="truncate text-xs text-sidebar-foreground/60">
-              Admin
-            </span>
-          </div>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div className="flex items-center gap-2.5 px-2 py-1.5 cursor-pointer hover:bg-sidebar-accent rounded-md">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary to-primary/60 text-xs font-semibold text-primary-foreground">
+                {shortName}
+              </div>
+              <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
+                <span className="truncate text-sm font-medium">
+                  {displayName}
+                </span>
+              </div>
+            </div>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem
+              onClick={logout}
+              className="text-red-500 focus:text-red-500"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarFooter>
     </Sidebar>
   );

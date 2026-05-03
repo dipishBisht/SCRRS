@@ -10,15 +10,13 @@ import {
 import Complaint, { getNextComplaintId } from "@/models/Complaint";
 import { createTimelineEvent } from "@/models/Timeline";
 import User from "@/models/User";
+import { getCurrentUser } from "@/lib/auth";
 import { Types } from "mongoose";
-
-// ─── GET /api/complaints ──────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
   try {
-    const userId = req.headers.get("x-user-id");
-    const userRole = req.headers.get("x-user-role");
-    if (!userId) return errorResponse("Unauthorized", 401);
+    const authUser = await getCurrentUser();
+    if (!authUser) return errorResponse("Unauthorized", 401);
 
     const { searchParams } = req.nextUrl;
     const { page, limit, skip } = getPagination(
@@ -31,17 +29,12 @@ export async function GET(req: NextRequest) {
     const priority = searchParams.get("priority");
     const search = searchParams.get("search");
 
-    // Build filter query
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filter: Record<string, any> = {};
+    const filter: Record<string, unknown> = {};
 
-    // Non-admins only see their own complaints
-    if (userRole === "user") filter.submittedBy = userId;
-
+    if (authUser.role === "user") filter.submittedBy = authUser.id;
     if (status) filter.status = status;
     if (department) filter.department = department;
     if (priority) filter.priority = priority;
-
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: "i" } },
@@ -71,31 +64,22 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// ─── POST /api/complaints ─────────────────────────────────────────────────────
-
 export async function POST(req: NextRequest) {
   try {
-    const userId = req.headers.get("x-user-id");
-    const userRole = req.headers.get("x-user-role");
-    if (!userId) return errorResponse("Unauthorized", 401);
+    const authUser = await getCurrentUser();
+    if (!authUser) return errorResponse("Unauthorized", 401);
 
     const body = await req.json();
     const { title, description, category, location, priority, attachments } =
       body;
     let { department } = body;
 
-    // Required field validation
     if (!title || !description || !category || !location) {
       return errorResponse(
         "Title, description, category and location are required",
       );
     }
-    if (title.trim().length < 5)
-      return errorResponse("Title must be at least 5 characters");
-    if (description.trim().length < 10)
-      return errorResponse("Description must be at least 10 characters");
 
-    // Smart routing: auto-detect department if not provided
     if (!department) {
       department = suggestDepartment(title, description);
     }
@@ -113,24 +97,20 @@ export async function POST(req: NextRequest) {
       location: location.trim(),
       priority: priority ?? "Medium",
       status: "Pending",
-      submittedBy: new Types.ObjectId(userId),
+      submittedBy: new Types.ObjectId(authUser.id),
       attachments: attachments ?? [],
     });
 
-    // Auto-assign to staff in matching department (if staff member exists)
-    if (userRole !== "user") {
-      const staffMember = await User.findOne({
-        role: "staff",
-        department,
-      });
-      if (staffMember) {
-        complaint.assignedTo = staffMember._id;
+    // Auto-assign to staff in same department if any
+    if (authUser.role !== "user") {
+      const staff = await User.findOne({ role: "staff", department });
+      if (staff) {
+        complaint.assignedTo = staff._id;
         await complaint.save();
       }
     }
 
-    // Create timeline entry
-    const submitter = await User.findById(userId).select("name");
+    const submitter = await User.findById(authUser.id).select("name");
     await createTimelineEvent({
       complaintId: complaint._id.toString(),
       type: "created",
@@ -149,7 +129,7 @@ export async function POST(req: NextRequest) {
       "Complaint submitted successfully",
       201,
     );
-  } catch (err: unknown) {
+  } catch (err) {
     const message =
       err instanceof Error ? err.message : "Failed to create complaint";
     return errorResponse(message, 500);

@@ -1,3 +1,4 @@
+"use client";
 import DashboardLayout from "@/components/dashboard/layout";
 import StatsCard from "@/components/dashboard/stats-card";
 import {
@@ -20,6 +21,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAuth } from "@/context/auth";
+import { userAccessor } from "@/lib/accessors/UserAccessor";
 import { complaints, resolutionTrend, stats } from "@/lib/mock-data";
 import {
   ArrowRight,
@@ -34,6 +37,9 @@ import {
 import Link from "next/link";
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+  const { getDisplayName } = userAccessor;
+  const name = getDisplayName(user?.name || "");
   return (
     <DashboardLayout>
       <div className="mx-auto w-full max-w-7xl space-y-8">
@@ -41,7 +47,7 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              Welcome back, Aarav
+              Welcome back, {name}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Here&apos;s how the complaint system is performing this week.

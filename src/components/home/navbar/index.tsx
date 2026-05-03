@@ -83,7 +83,7 @@ export default function Navbar() {
             ))}
             <div className="mt-2 flex gap-2 border-t border-border/60 pt-3">
               <Button asChild variant="outline" size="sm" className="flex-1">
-                <Link href="/login">Sign in</Link>
+                <Link href="/login">Login</Link>
               </Button>
               <Button asChild size="sm" className="flex-1">
                 <Link href="/signup">Get started</Link>

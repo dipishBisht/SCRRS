@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/context/auth";
 import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -15,18 +16,28 @@ export default function Login() {
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const { login } = useAuth();
+
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!email || !password) {
       toast.error("Please enter your email and password.");
       return;
     }
+
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+
+    const res = await login(email, password);
+
+    setLoading(false);
+
+    if (res.success) {
       toast.success("Welcome back!");
       router.push("/dashboard");
-    }, 800);
+    } else {
+      toast.error(res.error || "Login failed");
+    }
   };
 
   return (

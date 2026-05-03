@@ -37,14 +37,14 @@ export default function Footer() {
               { label: "Dashboard", to: "/dashboard" },
             ]}
           />
-          <FooterCol
+          {/* <FooterCol
             title="Company"
             links={[
               { label: "About", to: "/" },
               { label: "Contact", to: "/" },
               { label: "Privacy", to: "/" },
             ]}
-          />
+          /> */}
         </div>
 
         <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-border/60 pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center">

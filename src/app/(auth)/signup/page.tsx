@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/context/auth";
 import { Check, Eye, EyeOff, Loader2, Lock, Mail, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,20 +18,30 @@ export default function SignUp() {
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const { signup } = useAuth();
+
   const strength = scorePassword(password);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!name || !email || !password) {
       toast.error("Please fill in all fields.");
       return;
     }
+
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      toast.success("Account created — welcome to SCRRS!");
+
+    const res = await signup({ name, email, password });
+
+    setLoading(false);
+
+    if (res.success) {
+      toast.success("Account created!");
       router.push("/dashboard");
-    }, 900);
+    } else {
+      toast.error(res.error || "Signup failed");
+    }
   };
 
   return (
@@ -125,6 +136,24 @@ export default function SignUp() {
         >
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           {loading ? "Creating account…" : "Create account"}
+        </Button>
+
+        <div className="relative py-1">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border/60" />
+          </div>
+          <div className="relative flex justify-center text-[11px] uppercase tracking-wider">
+            <span className="bg-background px-2 text-muted-foreground">or</span>
+          </div>
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          className="h-10 w-full"
+          onClick={() => router.push("/login")}
+        >
+          Login
         </Button>
 
         <p className="text-center text-[11px] leading-relaxed text-muted-foreground">

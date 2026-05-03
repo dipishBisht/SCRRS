@@ -24,14 +24,27 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import DashboardLayout from "@/components/dashboard/layout";
 import Header from "@/components/dashboard/header";
 import { useRouter } from "next/navigation";
+import { complaintsApi } from "@/lib/api";
 
 const PRIORITIES = ["Low", "Medium", "High", "Urgent"] as const;
+const CATEGORIES = [
+  "Network",
+  "Hardware",
+  "Software",
+  "Lighting",
+  "HVAC",
+  "Plumbing",
+  "Furniture",
+  "Sanitation",
+  "Other",
+];
 
 export default function SubmitComplaints() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [department, setDepartment] = useState("");
+  const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
   const [priority, setPriority] = useState<string>("Medium");
   const [submitting, setSubmitting] = useState(false);
@@ -54,18 +67,30 @@ export default function SubmitComplaints() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title || !description || !department || !location) {
+    if (!title || !description || !department || !location || !category) {
       toast.error("Please fill out all required fields.");
       return;
     }
     setSubmitting(true);
-    setTimeout(() => {
-      toast.success("Complaint submitted", {
-        description: "Routed to " + department + " · ticket #CMP-1043",
-      });
-      setSubmitting(false);
-      router.push("/dashboard/complaints");
-    }, 700);
+    complaintsApi
+      .create({
+        title,
+        description,
+        department,
+        category,
+        location,
+        priority: priority as any,
+      })
+      .then((res) => {
+        if (res.success) {
+          toast.success("Complaint submitted");
+          router.push("/dashboard/complaints");
+        } else {
+          toast.error(res.error ?? "Submission failed");
+        }
+      })
+      .catch(() => toast.error("Network error"))
+      .finally(() => setSubmitting(false));
   }
 
   return (
@@ -131,17 +156,36 @@ export default function SubmitComplaints() {
                       </SelectContent>
                     </Select>
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="location">
-                      Location <span className="text-destructive">*</span>
+                    <Label>
+                      Category <span className="text-destructive">*</span>
                     </Label>
-                    <Input
-                      id="location"
-                      placeholder="e.g. Block A · Floor 2"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                    />
+                    <Select value={category} onValueChange={setCategory}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CATEGORIES.map((c) => (
+                          <SelectItem key={c} value={c}>
+                            {c}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="location">
+                    Location <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="location"
+                    placeholder="e.g. Block A · Floor 2"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -180,6 +224,7 @@ export default function SubmitComplaints() {
             </Card>
           </div>
 
+          {/* Smart routing and tips (unchanged) */}
           <div className="space-y-6">
             <Card className="border-primary/30 bg-primary/[0.03]">
               <CardHeader className="pb-3">

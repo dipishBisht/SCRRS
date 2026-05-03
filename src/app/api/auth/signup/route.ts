@@ -1,15 +1,15 @@
 import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
-import { signToken, setAuthCookie } from "@/lib/auth";
+import { setAuthCookie } from "@/lib/auth";
 import { successResponse, errorResponse, validateEmail, validatePassword } from "@/lib/helpers";
 import User from "@/models/User";
+import { signToken } from "@/lib/auth-client";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { name, email, password, role, department } = body;
 
-    // Validation
     if (!name || !email || !password) {
       return errorResponse("Name, email and password are required");
     }
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     });
 
     const token = signToken({ id: user._id.toString(), email: user.email, role: user.role });
-    setAuthCookie(token);
+    await setAuthCookie(token);
 
     return successResponse(
       { user: { id: user._id, name: user.name, email: user.email, role: user.role } },

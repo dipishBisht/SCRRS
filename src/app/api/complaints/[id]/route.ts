@@ -4,31 +4,30 @@ import { successResponse, errorResponse } from "@/lib/helpers";
 import Complaint from "@/models/Complaint";
 import { createTimelineEvent } from "@/models/Timeline";
 import User from "@/models/User";
+import { getCurrentUser } from "@/lib/auth";
 
 interface RouteContext {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
-
-// ─── GET /api/complaints/:id ──────────────────────────────────────────────────
 
 export async function GET(req: NextRequest, { params }: RouteContext) {
   try {
-    const userId = req.headers.get("x-user-id");
-    const userRole = req.headers.get("x-user-role");
-    if (!userId) return errorResponse("Unauthorized", 401);
+    const { id } = await params;
+    console.log("params");
+    const authUser = await getCurrentUser();
+    if (!authUser) return errorResponse("Unauthorized", 401);
 
     await connectDB();
 
-    const complaint = await Complaint.findById(params.id)
+    const complaint = await Complaint.findById(id)
       .populate("submittedBy", "name email")
       .populate("assignedTo", "name email role department");
 
     if (!complaint) return errorResponse("Complaint not found", 404);
 
-    // Users can only view their own complaints
     if (
-      userRole === "user" &&
-      complaint.submittedBy._id.toString() !== userId
+      authUser.role === "user" &&
+      complaint.submittedBy._id.toString() !== authUser.id
     ) {
       return errorResponse("Access denied", 403);
     }
@@ -39,31 +38,27 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
   }
 }
 
-// ─── PUT /api/complaints/:id ──────────────────────────────────────────────────
-
 export async function PUT(req: NextRequest, { params }: RouteContext) {
   try {
-    const userId = req.headers.get("x-user-id");
-    const userRole = req.headers.get("x-user-role");
-    if (!userId) return errorResponse("Unauthorized", 401);
+    const { id } = await params;
+    const authUser = await getCurrentUser();
+    if (!authUser) return errorResponse("Unauthorized", 401);
 
     const body = await req.json();
 
     await connectDB();
 
-    const complaint = await Complaint.findById(params.id);
+    const complaint = await Complaint.findById(id);
     if (!complaint) return errorResponse("Complaint not found", 404);
 
-    // Only owner or staff/admin can update
-    const isOwner = complaint.submittedBy.toString() === userId;
-    const isPrivileged = userRole === "admin" || userRole === "staff";
+    const isOwner = complaint.submittedBy.toString() === authUser.id;
+    const isPrivileged = authUser.role === "admin" || authUser.role === "staff";
 
     if (!isOwner && !isPrivileged) return errorResponse("Access denied", 403);
 
-    const actor = await User.findById(userId).select("name");
+    const actor = await User.findById(authUser.id).select("name");
     const actorName = actor?.name ?? "System";
 
-    // Track what changed for timeline
     const changes: string[] = [];
 
     if (body.status && body.status !== complaint.status) {
@@ -92,7 +87,6 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
     }
 
     if (isOwner && !isPrivileged) {
-      // Users can only update title, description, location (if Pending)
       if (complaint.status !== "Pending") {
         return errorResponse("Cannot edit complaint once it is in progress");
       }
@@ -104,7 +98,6 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
 
     await complaint.save();
 
-    // Create timeline events for changes
     if (changes.length > 0) {
       const timelineType =
         body.status === "Resolved"
@@ -127,7 +120,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       });
     }
 
-    const updated = await Complaint.findById(params.id)
+    const updated = await Complaint.findById(id)
       .populate("submittedBy", "name email")
       .populate("assignedTo", "name email role");
 
@@ -135,28 +128,26 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       { complaint: updated },
       "Complaint updated successfully",
     );
-  } catch (err: unknown) {
+  } catch (err) {
     const message =
       err instanceof Error ? err.message : "Failed to update complaint";
     return errorResponse(message, 500);
   }
 }
 
-// ─── DELETE /api/complaints/:id ───────────────────────────────────────────────
-
 export async function DELETE(req: NextRequest, { params }: RouteContext) {
   try {
-    const userId = req.headers.get("x-user-id");
-    const userRole = req.headers.get("x-user-role");
-    if (!userId) return errorResponse("Unauthorized", 401);
+    const { id } = await params;
+    const authUser = await getCurrentUser();
+    if (!authUser) return errorResponse("Unauthorized", 401);
 
     await connectDB();
 
-    const complaint = await Complaint.findById(params.id);
+    const complaint = await Complaint.findById(id);
     if (!complaint) return errorResponse("Complaint not found", 404);
 
-    const isOwner = complaint.submittedBy.toString() === userId;
-    const isAdmin = userRole === "admin";
+    const isOwner = complaint.submittedBy.toString() === authUser.id;
+    const isAdmin = authUser.role === "admin";
 
     if (!isOwner && !isAdmin) return errorResponse("Access denied", 403);
     if (isOwner && complaint.status !== "Pending") {
