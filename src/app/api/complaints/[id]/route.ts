@@ -4,7 +4,7 @@ import { successResponse, errorResponse } from "@/lib/helpers";
 import Complaint from "@/models/Complaint";
 import { createTimelineEvent } from "@/models/Timeline";
 import User from "@/models/User";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth-server";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -13,7 +13,6 @@ interface RouteContext {
 export async function GET(req: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
-    console.log("params");
     const authUser = await getCurrentUser();
     if (!authUser) return errorResponse("Unauthorized", 401);
 

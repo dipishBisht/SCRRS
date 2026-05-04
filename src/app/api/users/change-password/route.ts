@@ -6,7 +6,7 @@ import {
   validatePassword,
 } from "@/lib/helpers";
 import User from "@/models/User";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth-server";
 
 export async function PUT(req: NextRequest) {
   try {

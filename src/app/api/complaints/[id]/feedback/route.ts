@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth-server";
 import { connectDB } from "@/lib/db";
 import { errorResponse, successResponse } from "@/lib/helpers";
 import Complaint from "@/models/Complaint";

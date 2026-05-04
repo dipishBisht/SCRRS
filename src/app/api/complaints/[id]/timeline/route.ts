@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/helpers";
 import Timeline from "@/models/Timeline";
 import Complaint from "@/models/Complaint";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth-server";
 
 export async function GET(
   req: NextRequest,

@@ -15,8 +15,6 @@ async function seed() {
     },
     { upsert: true, new: true }
   );
-
-  console.log("✅ Admin seeded: admin@scrrs.com / Admin@123");
   process.exit(0);
 }
 

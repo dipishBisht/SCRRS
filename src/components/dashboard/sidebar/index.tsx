@@ -33,7 +33,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { clearAuthCookie } from "@/lib/auth";
+import { clearAuthCookie } from "@/lib/auth-server";
 import { toast } from "sonner";
 
 const items = [

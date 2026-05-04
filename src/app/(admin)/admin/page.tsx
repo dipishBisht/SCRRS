@@ -76,7 +76,6 @@ export default function AdminPage() {
           adminApi.distribution(),
           complaintsApi.list({ limit: 6 }),
         ]);
-        console.log(trendRes)
         if (statsRes.success && statsRes.data) setStats(statsRes.data.stats);
         if (trendRes.success && trendRes.data) setTrend(trendRes.data.trend);
         if (distRes.success && distRes.data)

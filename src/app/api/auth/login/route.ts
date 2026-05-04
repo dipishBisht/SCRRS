@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
-import { setAuthCookie } from "@/lib/auth";
+import { setAuthCookie } from "@/lib/auth-server";
 import { successResponse, errorResponse, validateEmail } from "@/lib/helpers";
 import User from "@/models/User";
 import { signToken } from "@/lib/auth-client";
@@ -22,11 +22,6 @@ export async function POST(req: NextRequest) {
     );
     if (!user) return errorResponse("Invalid email or password", 401);
 
-    console.log("=== LOGIN/SIGNUP DEBUG ===");
-    console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
-    console.log("JWT_SECRET length:", process.env.JWT_SECRET?.length);
-    console.log("User ID:", user._id.toString());
-
     const isMatch = await user.comparePassword(password);
     if (!isMatch) return errorResponse("Invalid email or password", 401);
 
@@ -35,8 +30,6 @@ export async function POST(req: NextRequest) {
       email: user.email,
       role: user.role,
     });
-
-    console.log("TOKEN CREATED:", token.slice(0, 20) + "...");
 
     await setAuthCookie(token);
 

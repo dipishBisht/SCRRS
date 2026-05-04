@@ -8,13 +8,13 @@ import Features from "@/components/home/features";
 import HowItWorks from "@/components/home/how-it-works";
 import Preview from "@/components/home/preview";
 import Benefits from "@/components/home/benefits";
-import { checkIsAuthenticated } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth-server";
 import { redirect } from "next/navigation";
 
 export default async function Home() {
-  const isAuthenticated = await checkIsAuthenticated();
-  
-  if (isAuthenticated) {
+  const isAuth = await isAuthenticated();
+
+  if (isAuth) {
     redirect("/dashboard");
   }
 

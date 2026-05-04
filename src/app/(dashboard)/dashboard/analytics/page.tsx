@@ -103,8 +103,6 @@ export default function Analytics() {
   const maxDept = byDept.length > 0 ? Math.max(...byDept.map(d => d.value)) : 1;
   const statusDist = distribution?.byStatus ?? [];
   const totalDist = statusDist.reduce((s, d) => s + d.value, 0);
-  console.log("maxTrend", maxTrend);
-  console.log(trendData);
 
   return (
     <DashboardLayout>

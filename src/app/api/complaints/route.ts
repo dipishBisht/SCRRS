@@ -11,7 +11,7 @@ import {
 import Complaint, { getNextComplaintId } from "@/models/Complaint";
 import { createTimelineEvent } from "@/models/Timeline";
 import User from "@/models/User";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth-server";
 import { Types } from "mongoose";
 
 export async function GET(req: NextRequest) {
