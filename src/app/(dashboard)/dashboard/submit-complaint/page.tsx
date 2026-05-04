@@ -207,19 +207,6 @@ export default function SubmitComplaints() {
                     ))}
                   </RadioGroup>
                 </div>
-
-                <div className="space-y-2">
-                  <Label>Attachments</Label>
-                  <div className="flex flex-col items-center justify-center rounded-md border border-dashed border-border bg-muted/30 px-4 py-8 text-center">
-                    <Upload className="h-5 w-5 text-muted-foreground" />
-                    <p className="mt-2 text-sm font-medium">
-                      Drop files or click to upload
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      PNG, JPG, PDF up to 5MB
-                    </p>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>

@@ -66,16 +66,6 @@ export default function Login() {
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <button
-              type="button"
-              onClick={() => toast.info("Password reset link sent (demo).")}
-              className="text-xs text-muted-foreground hover:text-foreground"
-            >
-              Forgot password?
-            </button>
-          </div>
           <div className="relative">
             <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input

@@ -44,3 +44,8 @@ export async function getCurrentUser(): Promise<JWTPayload | null> {
   if (!token) return null;
   return verifyToken(token);
 }
+
+export async function checkIsAuthenticated(): Promise<boolean> {
+  const user = await getCurrentUser();
+  return !!user;
+}

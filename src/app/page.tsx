@@ -8,8 +8,16 @@ import Features from "@/components/home/features";
 import HowItWorks from "@/components/home/how-it-works";
 import Preview from "@/components/home/preview";
 import Benefits from "@/components/home/benefits";
+import { checkIsAuthenticated } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function Home() {
+export default async function Home() {
+  const isAuthenticated = await checkIsAuthenticated();
+  
+  if (isAuthenticated) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
       <Navbar />

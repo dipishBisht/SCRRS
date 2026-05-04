@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useAuth } from "@/context/auth";
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
@@ -32,6 +33,10 @@ function formatDate(dateStr: string) {
 }
 
 export function ComplaintsTable({ data, onDelete }: { data: Complaint[]; onDelete?: (id: string) => void }) {
+
+  const {user} = useAuth();
+  const path=user?.role === "admin" ? "/admin/complaints/" : "/dashboard/complaints/";
+
   if (data.length === 0) {
     return (
       <EmptyState
@@ -68,7 +73,7 @@ export function ComplaintsTable({ data, onDelete }: { data: Complaint[]; onDelet
         {data.map((c) => (
           <TableRow key={c._id} className="border-border/60 group">
             <TableCell className="pl-6 py-3">
-              <Link href={`/dashboard/complaints/${c._id}`} className="flex flex-col">
+              <Link href={`${path}/${c._id}`} className="flex flex-col">
                 <span className="text-sm font-medium text-foreground line-clamp-1 group-hover:text-primary">
                   {c.title}
                 </span>
@@ -92,7 +97,7 @@ export function ComplaintsTable({ data, onDelete }: { data: Complaint[]; onDelet
             <TableCell className="pr-6 text-right">
               <div className="flex items-center justify-end gap-1">
                 <Link
-                  href={`/dashboard/complaints/${c._id}`}
+                  href={`${path}/${c._id}`}
                   className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-all group-hover:opacity-100 hover:bg-accent hover:text-foreground"
                 >
                   <ChevronRight className="h-4 w-4" />

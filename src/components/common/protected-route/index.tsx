@@ -5,16 +5,20 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { loading, isAuthenticated } = useAuth();
+  const { loading, isAuthenticated, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push("/login");
+    if (!loading) {
+      if (!isAuthenticated) {
+        router.push("/login");
+      } else if (user?.role === "admin") {
+        router.push("/admin");
+      }
     }
-  }, [loading, isAuthenticated, router]);
+  }, [loading, isAuthenticated, user, router]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Loading...</div>
   if (!isAuthenticated) return null;
 
   return <>{children}</>;

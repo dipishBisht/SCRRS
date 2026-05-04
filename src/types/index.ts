@@ -31,6 +31,7 @@ export interface IComplaint {
   attachments?: string[];
   createdAt: Date;
   updatedAt: Date;
+  escalated: boolean;
 }
 
 export interface ITimeline {

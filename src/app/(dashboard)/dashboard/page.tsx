@@ -136,10 +136,6 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-9 gap-1.5">
-              <Filter className="h-4 w-4" />
-              This week
-            </Button>
             <Button asChild size="sm" className="h-9 gap-1.5 shadow-sm">
               <Link href="/dashboard/submit-complaint">
                 <PlusCircle className="h-4 w-4" />

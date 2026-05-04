@@ -6,28 +6,22 @@ import { getCurrentUser } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
-     const authUser = await getCurrentUser();
+    const authUser = await getCurrentUser();
     if (!authUser || authUser.role !== "admin") {
       return errorResponse("Admin access required", 403);
     }
 
     await connectDB();
 
-    const [
-      total,
-      pending,
-      inProgress,
-      resolved,
-      urgent,
-      resolvedComplaints,
-    ] = await Promise.all([
-      Complaint.countDocuments(),
-      Complaint.countDocuments({ status: "Pending" }),
-      Complaint.countDocuments({ status: "In Progress" }),
-      Complaint.countDocuments({ status: "Resolved" }),
-      Complaint.countDocuments({ priority: "Urgent" }),
-      Complaint.find({ status: "Resolved" }).select("createdAt updatedAt"),
-    ]);
+    const [total, pending, inProgress, resolved, urgent, resolvedComplaints] =
+      await Promise.all([
+        Complaint.countDocuments(),
+        Complaint.countDocuments({ status: "Pending" }),
+        Complaint.countDocuments({ status: "In Progress" }),
+        Complaint.countDocuments({ status: "Resolved" }),
+        Complaint.countDocuments({ priority: "Urgent" }),
+        Complaint.find({ status: "Resolved" }).select("createdAt updatedAt"),
+      ]);
 
     // Average resolution time in hours
     let avgResolutionTime = 0;
@@ -36,7 +30,7 @@ export async function GET(req: NextRequest) {
         return acc + (c.updatedAt.getTime() - c.createdAt.getTime());
       }, 0);
       avgResolutionTime = Math.round(
-        totalMs / resolvedComplaints.length / (1000 * 60 * 60)
+        totalMs / resolvedComplaints.length / (1000 * 60 * 60),
       );
     }
 

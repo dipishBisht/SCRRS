@@ -34,7 +34,7 @@ export default function Settings() {
 
   return (
     <DashboardLayout>
-      <div className="mx-auto w-full max-w-4xl space-y-6">
+      <div className="w-full max-w-4xl space-y-6">
         <Header
           title="Settings"
           description="Manage your profile, notifications, and workspace preferences."
@@ -43,17 +43,12 @@ export default function Settings() {
         <Tabs defaultValue="profile">
           <TabsList>
             <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="appearance">Appearance</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="mt-6 space-y-6">
             <ProfileCard user={user} onUpdate={updateUser} />
             <PasswordCard />
-          </TabsContent>
-
-          <TabsContent value="notifications" className="mt-6">
-            <NotificationsCard />
           </TabsContent>
 
           <TabsContent value="appearance" className="mt-6">
@@ -108,12 +103,6 @@ function ProfileCard({ user, onUpdate }: { user: User | null; onUpdate: (user: U
               .join("")
               .toUpperCase()
               .slice(0, 2)}
-          </div>
-          <div className="space-y-1">
-            <Button size="sm" variant="outline" disabled>
-              Change photo
-            </Button>
-            <p className="text-xs text-muted-foreground">JPG or PNG, max 2MB.</p>
           </div>
         </div>
         <Separator />
@@ -259,63 +248,6 @@ function PasswordCard() {
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-// ----------------------------------------------------------------------------
-// Notifications Card (UI only – no backend yet)
-// ----------------------------------------------------------------------------
-function NotificationsCard() {
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base">Notifications</CardTitle>
-        <CardDescription className="text-xs">
-          Choose what you&apos;d like to be notified about.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="divide-y divide-border/60">
-        <ToggleRow
-          title="New complaints"
-          desc="Get notified when a new complaint is submitted."
-          defaultChecked
-        />
-        <ToggleRow
-          title="Assignments"
-          desc="When a complaint is routed to you."
-          defaultChecked
-        />
-        <ToggleRow
-          title="Status changes"
-          desc="Updates on tickets you're following."
-        />
-        <ToggleRow
-          title="Weekly summary"
-          desc="A weekly digest of activity and trends."
-          defaultChecked
-        />
-      </CardContent>
-    </Card>
-  );
-}
-
-function ToggleRow({
-  title,
-  desc,
-  defaultChecked,
-}: {
-  title: string;
-  desc: string;
-  defaultChecked?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
-      <div>
-        <p className="text-sm font-medium text-foreground">{title}</p>
-        <p className="text-xs text-muted-foreground">{desc}</p>
-      </div>
-      <Switch defaultChecked={defaultChecked} />
-    </div>
   );
 }
 

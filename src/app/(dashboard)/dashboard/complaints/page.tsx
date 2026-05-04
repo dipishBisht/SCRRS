@@ -27,7 +27,15 @@ const TABS = [
 ];
 
 export default function Complaints() {
-  const { complaints, pagination, filters, loading, updateFilter, setPage, deleteComplaint } = useComplaints();
+  const {
+    complaints,
+    pagination,
+    filters,
+    loading,
+    updateFilter,
+    setPage,
+    deleteComplaint,
+  } = useComplaints();
   const [searchInput, setSearchInput] = useState(filters.search);
 
   const handleSearch = () => {
@@ -81,11 +89,17 @@ export default function Complaints() {
           <div className="flex flex-col gap-3 border-b border-border/60 p-4 md:flex-row md:items-center md:justify-between">
             <Tabs
               value={filters.status === "all" ? "all" : filters.status}
-              onValueChange={(v) => updateFilter("status", v === "all" ? "" : v)}
+              onValueChange={(v) =>
+                updateFilter("status", v === "all" ? "" : v)
+              }
             >
               <TabsList>
                 {TABS.map((t) => (
-                  <TabsTrigger key={t.value} value={t.value} className="text-xs">
+                  <TabsTrigger
+                    key={t.value}
+                    value={t.value}
+                    className="text-xs"
+                  >
                     {t.label}
                   </TabsTrigger>
                 ))}
@@ -97,7 +111,11 @@ export default function Complaints() {
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSearchInput(value);
+                    updateFilter("search", value);
+                  }}
                   onKeyDown={handleKeyDown}
                   onBlur={handleSearch}
                   placeholder="Search tickets…"
@@ -106,7 +124,9 @@ export default function Complaints() {
               </div>
               <Select
                 value={filters.department || "all"}
-                onValueChange={(v) => updateFilter("department", v === "all" ? "" : v)}
+                onValueChange={(v) =>
+                  updateFilter("department", v === "all" ? "" : v)
+                }
               >
                 <SelectTrigger className="h-9 w-[150px]">
                   <Filter className="h-3.5 w-3.5 text-muted-foreground" />
@@ -122,7 +142,9 @@ export default function Complaints() {
               </Select>
               <Select
                 value={filters.priority || "all"}
-                onValueChange={(v) => updateFilter("priority", v === "all" ? "" : v)}
+                onValueChange={(v) =>
+                  updateFilter("priority", v === "all" ? "" : v)
+                }
               >
                 <SelectTrigger className="h-9 w-[130px]">
                   <SelectValue placeholder="Priority" />
@@ -143,7 +165,9 @@ export default function Complaints() {
             <div className="flex items-center justify-between border-t border-border/60 px-6 py-3 text-xs text-muted-foreground">
               <span>
                 Showing{" "}
-                <span className="font-medium text-foreground">{complaints.length}</span>{" "}
+                <span className="font-medium text-foreground">
+                  {complaints.length}
+                </span>{" "}
                 of {pagination?.total ?? 0} complaints
               </span>
               <div className="flex items-center gap-2">

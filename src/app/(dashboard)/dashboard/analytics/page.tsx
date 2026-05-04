@@ -95,11 +95,16 @@ export default function Analytics() {
   };
 
   const trendData = trend.length ? trend : [];
-  const maxTrend = trendData.length > 0 ? Math.max(...trendData.flatMap(d => [d.submitted, d.resolved])) : 1;
+  const maxTrend =
+  trendData.length > 0
+    ? Math.max(...trendData.flatMap(d => [d.submitted, d.resolved]), 1)
+    : 1;
   const byDept = distribution?.byDepartment ?? [];
   const maxDept = byDept.length > 0 ? Math.max(...byDept.map(d => d.value)) : 1;
   const statusDist = distribution?.byStatus ?? [];
   const totalDist = statusDist.reduce((s, d) => s + d.value, 0);
+  console.log("maxTrend", maxTrend);
+  console.log(trendData);
 
   return (
     <DashboardLayout>
@@ -135,37 +140,56 @@ export default function Analytics() {
               </CardTitle>
               <CardDescription className="text-xs">Daily volume across the past week</CardDescription>
             </CardHeader>
-            <CardContent>
-              {trendData.length > 0 ? (
-                <>
-                  <div className="flex h-[260px] items-end gap-3">
-                    {trendData.map((d) => (
-                      <div key={d.day} className="flex flex-1 flex-col items-center gap-2">
-                        <div className="flex h-full w-full items-end justify-center gap-1">
-                          <div
-                            className="w-1/2 rounded-t-sm bg-primary/70 transition-all hover:bg-primary"
-                            style={{ height: `${(d.submitted / maxTrend) * 100}%` }}
-                            title={`${d.submitted} submitted`}
-                          />
-                          <div
-                            className="w-1/2 rounded-t-sm bg-success transition-all hover:opacity-80"
-                            style={{ height: `${(d.resolved / maxTrend) * 100}%` }}
-                            title={`${d.resolved} resolved`}
-                          />
-                        </div>
-                        <span className="text-xs text-muted-foreground">{d.day}</span>
+             <CardContent>
+            {trendData.length > 0 ? (
+              <>
+                <div className="flex h-[260px] items-end gap-3">
+                  {trendData.map((d) => (
+                    <div key={d.day} className="flex flex-1 flex-col items-center gap-2">
+
+                      {/* ✅ FIXED HEIGHT CONTAINER */}
+                      <div className="flex h-[220px] w-full items-end justify-center gap-1">
+
+                        {/* Submitted */}
+                        <div
+                          className="w-1/2 bg-blue-500 rounded-t-sm"
+                          style={{
+                            height: `${Math.max((d.submitted / maxTrend) * 100, 3)}%`,
+                          }}
+                          title={`${d.submitted} submitted`}
+                        />
+
+                        {/* Resolved */}
+                        <div
+                          className="w-1/2 bg-green-500 rounded-t-sm"
+                          style={{
+                            height: `${Math.max((d.resolved / maxTrend) * 100, 3)}%`,
+                          }}
+                          title={`${d.resolved} resolved`}
+                        />
                       </div>
-                    ))}
-                  </div>
-                  <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-primary/70" /> Submitted</span>
-                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-success" /> Resolved</span>
-                  </div>
-                </>
-              ) : (
-                <p className="text-center text-sm text-muted-foreground">No data available</p>
-              )}
-            </CardContent>
+
+                      <span className="text-xs text-muted-foreground">{d.day}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Legend */}
+                <div className="mt-4 flex gap-4 text-xs">
+                  <span className="flex items-center gap-1">
+                    <span className="h-2 w-2 bg-blue-500 rounded-sm" /> Submitted
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="h-2 w-2 bg-green-500 rounded-sm" /> Resolved
+                  </span>
+                </div>
+              </>
+            ) : (
+              <p className="text-center text-sm text-muted-foreground">
+                No data available
+              </p>
+            )}
+          </CardContent>
           </Card>
 
           <Card>

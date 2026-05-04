@@ -1,9 +1,8 @@
 "use client";
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth";
 import { userAccessor } from "@/lib/accessors/UserAccessor";
 
@@ -33,10 +32,6 @@ export default function Navbar() {
       </div>
 
       <div className="flex flex-1 items-center justify-end gap-2 md:flex-none">
-        <Button variant="ghost" size="icon" className="relative h-9 w-9">
-          <Bell className="h-4 w-4" />
-          <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-destructive" />
-        </Button>
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-primary to-primary/60 text-xs font-semibold text-primary-foreground">
           {shortName}
         </div>
