@@ -10,19 +10,34 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { email, password } = body;
 
-    if (!email || !password) return errorResponse("Email and password are required");
+    if (!email || !password)
+      return errorResponse("Email and password are required");
     if (!validateEmail(email)) return errorResponse("Invalid email address");
 
     await connectDB();
 
     // Explicitly select password (it's hidden by default)
-    const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+    const user = await User.findOne({ email: email.toLowerCase() }).select(
+      "+password",
+    );
     if (!user) return errorResponse("Invalid email or password", 401);
+
+    console.log("=== LOGIN/SIGNUP DEBUG ===");
+    console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
+    console.log("JWT_SECRET length:", process.env.JWT_SECRET?.length);
+    console.log("User ID:", user._id.toString());
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) return errorResponse("Invalid email or password", 401);
 
-    const token = signToken({ id: user._id.toString(), email: user.email, role: user.role });
+    const token = signToken({
+      id: user._id.toString(),
+      email: user.email,
+      role: user.role,
+    });
+
+    console.log("TOKEN CREATED:", token.slice(0, 20) + "...");
+
     await setAuthCookie(token);
 
     return successResponse(
@@ -35,7 +50,7 @@ export async function POST(req: NextRequest) {
           department: user.department,
         },
       },
-      "Login successful"
+      "Login successful",
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Login failed";
