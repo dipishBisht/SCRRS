@@ -65,7 +65,6 @@ export default function AdminAnalytics() {
   const [deptPerformance, setDeptPerformance] = useState<DepartmentStats[]>([]);
   const [staffWorkload, setStaffWorkload] = useState<StaffWorkload[]>([]);
   const [categoryData, setCategoryData] = useState<any[]>([]);
-  const [satisfactionData, setSatisfactionData] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -166,18 +165,6 @@ export default function AdminAnalytics() {
           });
           setStaffWorkload(workload);
         }
-
-        // Satisfaction by department (from feedback – we don't have feedback API yet, so use placeholder)
-        // For now, derive from stats satisfaction overall
-        const overallSatisfaction = statsRes.success
-          ? statsRes.data.stats.satisfaction
-          : 80;
-        setSatisfactionData([
-          { department: "IT", rating: overallSatisfaction / 20 }, // approximate
-          { department: "Electrical", rating: overallSatisfaction / 20 - 0.2 },
-          { department: "Maintenance", rating: overallSatisfaction / 20 + 0.1 },
-          { department: "Cleaning", rating: overallSatisfaction / 20 - 0.1 },
-        ]);
       } catch (error) {
         console.error("Failed to load analytics", error);
       } finally {
@@ -316,30 +303,6 @@ export default function AdminAnalytics() {
               </CardContent>
             </Card>
           </div>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">
-                Satisfaction Rating by Department
-              </CardTitle>
-              <CardDescription>Average user rating (1-5)</CardDescription>
-            </CardHeader>
-            <CardContent className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={satisfactionData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="department" />
-                  <YAxis domain={[0, 5]} />
-                  <Tooltip />
-                  <Line
-                    type="monotone"
-                    dataKey="rating"
-                    stroke="#8b5cf6"
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
         </TabsContent>
 
         <TabsContent value="trends">
