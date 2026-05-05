@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
-import { setAuthCookieOnResponse } from "@/lib/auth-server";
+import { setAuthCookieOnResponse } from "@/lib/auth-route";
 import { successResponse, errorResponse, validateEmail } from "@/lib/helpers";
 import User from "@/models/User";
 import { signToken } from "@/lib/auth-client";
