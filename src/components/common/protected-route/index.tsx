@@ -12,6 +12,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     if (!loading) {
       if (!isAuthenticated) {
         router.replace("/login");
+      } else if (user?.role === "admin") {
+        router.push("/admin");
       }
     }
   }, [loading, isAuthenticated, user, router]);
