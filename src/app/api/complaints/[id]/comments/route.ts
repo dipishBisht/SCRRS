@@ -5,7 +5,7 @@ import Comment from "@/models/Comment";
 import Complaint from "@/models/Complaint";
 import { createTimelineEvent } from "@/models/Timeline";
 import User from "@/models/User";
-import { getCurrentUser } from "@/lib/auth-server";
+import { getCurrentUserFromRequest } from "@/lib/auth-route";
 import { Types } from "mongoose";
 
 export async function GET(
@@ -13,7 +13,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const authUser = await getCurrentUser();
+    const authUser = getCurrentUserFromRequest(req);
     if (!authUser) return errorResponse("Unauthorized", 401);
 
     const { id } = await params;
@@ -42,7 +42,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const authUser = await getCurrentUser();
+    const authUser = await getCurrentUserFromRequest(req  );
     if (!authUser) return errorResponse("Unauthorized", 401);
 
     const { id } = await params;

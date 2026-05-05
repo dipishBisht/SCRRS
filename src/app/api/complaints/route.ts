@@ -11,12 +11,12 @@ import {
 import Complaint, { getNextComplaintId } from "@/models/Complaint";
 import { createTimelineEvent } from "@/models/Timeline";
 import User from "@/models/User";
-import { getCurrentUser } from "@/lib/auth-server";
+import { getCurrentUserFromRequest } from "@/lib/auth-route";
 import { Types } from "mongoose";
 
 export async function GET(req: NextRequest) {
   try {
-    const authUser = await getCurrentUser();
+    const authUser = getCurrentUserFromRequest(req);
     if (!authUser) return errorResponse("Unauthorized", 401);
 
     const { searchParams } = req.nextUrl;
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const authUser = await getCurrentUser();
+    const authUser = getCurrentUserFromRequest(req);
     if (!authUser) return errorResponse("Unauthorized", 401);
 
     const body = await req.json();

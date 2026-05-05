@@ -1,7 +1,12 @@
 import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
-import { setAuthCookie } from "@/lib/auth-server";
-import { successResponse, errorResponse, validateEmail, validatePassword } from "@/lib/helpers";
+import { setAuthCookie, setAuthCookieOnResponse } from "@/lib/auth-server";
+import {
+  successResponse,
+  errorResponse,
+  validateEmail,
+  validatePassword,
+} from "@/lib/helpers";
 import User from "@/models/User";
 import { signToken } from "@/lib/auth-client";
 
@@ -13,7 +18,8 @@ export async function POST(req: NextRequest) {
     if (!name || !email || !password) {
       return errorResponse("Name, email and password are required");
     }
-    if (name.trim().length < 2) return errorResponse("Name must be at least 2 characters");
+    if (name.trim().length < 2)
+      return errorResponse("Name must be at least 2 characters");
     if (!validateEmail(email)) return errorResponse("Invalid email address");
     const pwdError = validatePassword(password);
     if (pwdError) return errorResponse(pwdError);
@@ -31,14 +37,26 @@ export async function POST(req: NextRequest) {
       department: department ?? undefined,
     });
 
-    const token = signToken({ id: user._id.toString(), email: user.email, role: user.role });
-    await setAuthCookie(token);
+    const token = signToken({
+      id: user._id.toString(),
+      email: user.email,
+      role: user.role,
+    });
 
-    return successResponse(
-      { user: { id: user._id, name: user.name, email: user.email, role: user.role } },
+    const response = successResponse(
+      {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      },
       "Account created successfully",
-      201
+      201,
     );
+
+    return setAuthCookieOnResponse(response, token);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Signup failed";
     return errorResponse(message, 500);

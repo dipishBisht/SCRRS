@@ -6,11 +6,11 @@ import {
   validatePassword,
 } from "@/lib/helpers";
 import User from "@/models/User";
-import { getCurrentUser } from "@/lib/auth-server";
+import { getCurrentUserFromRequest } from "@/lib/auth-route";
 
 export async function PUT(req: NextRequest) {
   try {
-    const authUser = await getCurrentUser();
+    const authUser = getCurrentUserFromRequest(req);
     if (!authUser) return errorResponse("Unauthorized", 401);
 
     const body = await req.json();

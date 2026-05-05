@@ -3,14 +3,14 @@ import { connectDB } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/helpers";
 import Timeline from "@/models/Timeline";
 import Complaint from "@/models/Complaint";
-import { getCurrentUser } from "@/lib/auth-server";
+import { getCurrentUserFromRequest } from "@/lib/auth-route";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const authUser = await getCurrentUser();
+    const authUser = getCurrentUserFromRequest(req);
     if (!authUser) return errorResponse("Unauthorized", 401);
 
     const { id } = await params;

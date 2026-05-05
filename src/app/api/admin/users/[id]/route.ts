@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/helpers";
 import User from "@/models/User";
-import { getCurrentUser } from "@/lib/auth-server";
+import { getCurrentUserFromRequest } from "@/lib/auth-route";
 
 export async function PUT(
   req: NextRequest,
@@ -10,7 +10,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const authUser = await getCurrentUser();
+    const authUser = getCurrentUserFromRequest(req);
     if (!authUser || authUser.role !== "admin")
       return errorResponse("Admin access required", 403);
     const { role, department } = await req.json();
@@ -35,7 +35,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const authUser = await getCurrentUser();
+    const authUser = getCurrentUserFromRequest(req);
     if (!authUser || authUser.role !== "admin")
       return errorResponse("Admin access required", 403);
     await connectDB();

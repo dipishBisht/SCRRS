@@ -2,11 +2,11 @@ import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/helpers";
 import User from "@/models/User";
-import { getCurrentUser } from "@/lib/auth-server";
+import { getCurrentUserFromRequest } from "@/lib/auth-route";
 
 export async function GET(req: NextRequest) {
   try {
-    const authUser = await getCurrentUser();
+    const authUser = await getCurrentUserFromRequest(req);
     if (!authUser || authUser.role !== "admin")
       return errorResponse("Admin access required", 403);
     await connectDB();
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const authUser = await getCurrentUser();
+    const authUser = getCurrentUserFromRequest(req);
     if (!authUser || authUser.role !== "admin")
       return errorResponse("Admin access required", 403);
     const body = await req.json();

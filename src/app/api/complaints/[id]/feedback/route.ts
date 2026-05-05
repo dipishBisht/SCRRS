@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getCurrentUser } from "@/lib/auth-server";
+import { getCurrentUserFromRequest } from "@/lib/auth-route";
 import { connectDB } from "@/lib/db";
 import { errorResponse, successResponse } from "@/lib/helpers";
 import Complaint from "@/models/Complaint";
@@ -9,7 +9,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const authUser = await getCurrentUser();
+  const authUser = getCurrentUserFromRequest(req);
   if (!authUser) return errorResponse("Unauthorized", 401);
 
   const { id } = await params;

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
-import { setAuthCookie } from "@/lib/auth-server";
+import { setAuthCookieOnResponse } from "@/lib/auth-server";
 import { successResponse, errorResponse, validateEmail } from "@/lib/helpers";
 import User from "@/models/User";
 import { signToken } from "@/lib/auth-client";
@@ -31,9 +31,7 @@ export async function POST(req: NextRequest) {
       role: user.role,
     });
 
-    await setAuthCookie(token);
-
-    return successResponse(
+    const response = successResponse(
       {
         user: {
           id: user._id,
@@ -45,6 +43,8 @@ export async function POST(req: NextRequest) {
       },
       "Login successful",
     );
+
+    return setAuthCookieOnResponse(response, token);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Login failed";
     return errorResponse(message, 500);

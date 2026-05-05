@@ -1,7 +1,5 @@
 "use server";
 import { cookies } from "next/headers";
-import { JWTPayload } from "@/types";
-import { verifyToken } from "./auth-client";
 
 const COOKIE_NAME = "scrrs_token";
 
@@ -46,22 +44,10 @@ export async function clearAuthCookie(): Promise<void> {
   });
 }
 
-// ─── Current User Helper (for API routes) ───────────────────────────────────
-
-/**
- * Get the currently authenticated user from the cookie.
- * Returns JWTPayload if valid, otherwise null.
- */
-export async function getCurrentUser(): Promise<JWTPayload | null> {
-  const token = await getTokenFromCookies();
-  if (!token) return null;
-  return verifyToken(token);
-}
-
 /**
  * Check if the user is authenticated (token exists & valid)
  */
 export async function isAuthenticated(): Promise<boolean> {
-  const user = await getCurrentUser();
-  return user !== null;
+  const token = getTokenFromCookies();
+  return token !== null;
 }

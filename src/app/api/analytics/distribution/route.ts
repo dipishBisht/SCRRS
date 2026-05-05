@@ -2,17 +2,20 @@ import { NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/helpers";
 import Complaint from "@/models/Complaint";
-import { getCurrentUser } from "@/lib/auth-server";
+import { getCurrentUserFromRequest } from "@/lib/auth-route";
 import { Types } from "mongoose";
 
 export async function GET(req: NextRequest) {
   try {
-    const authUser = await getCurrentUser();
+    const authUser = getCurrentUserFromRequest(req);
     if (!authUser) return errorResponse("Unauthorized", 401);
 
     await connectDB();
 
-    const filter = authUser.role === "user" ? { submittedBy: new Types.ObjectId(authUser.id) } : {};
+    const filter =
+      authUser.role === "user"
+        ? { submittedBy: new Types.ObjectId(authUser.id) }
+        : {};
 
     const byDepartment = await Complaint.aggregate([
       { $match: filter },

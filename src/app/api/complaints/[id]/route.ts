@@ -4,7 +4,7 @@ import { successResponse, errorResponse } from "@/lib/helpers";
 import Complaint from "@/models/Complaint";
 import { createTimelineEvent } from "@/models/Timeline";
 import User from "@/models/User";
-import { getCurrentUser } from "@/lib/auth-server";
+import { getCurrentUserFromRequest } from "@/lib/auth-route";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -13,7 +13,7 @@ interface RouteContext {
 export async function GET(req: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
-    const authUser = await getCurrentUser();
+    const authUser = getCurrentUserFromRequest(req);
     if (!authUser) return errorResponse("Unauthorized", 401);
 
     await connectDB();
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
 export async function PUT(req: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
-    const authUser = await getCurrentUser();
+    const authUser = getCurrentUserFromRequest(req);
     if (!authUser) return errorResponse("Unauthorized", 401);
 
     const body = await req.json();
@@ -137,7 +137,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
 export async function DELETE(req: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
-    const authUser = await getCurrentUser();
+    const authUser = getCurrentUserFromRequest(req);
     if (!authUser) return errorResponse("Unauthorized", 401);
 
     await connectDB();
