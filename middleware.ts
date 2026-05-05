@@ -1,35 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/lib/auth-client";
+import { jwtVerify } from "jose";
+import { Role } from "@/types";
 
-// Routes that require authentication
-const PROTECTED_PREFIXES = [
-  "/api/users",
-  "/api/complaints",
-  "/api/admin",
-];
+const PROTECTED_PREFIXES = ["/api/users", "/api/complaints", "/api/admin"];
+const PUBLIC_ROUTES = ["/api/auth/signup", "/api/auth/login"];
 
-// Routes that are always public
-const PUBLIC_ROUTES = [
-  "/api/auth/signup",
-  "/api/auth/login",
-];
-
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Skip public routes
   if (PUBLIC_ROUTES.some((r) => pathname.startsWith(r))) {
     return NextResponse.next();
   }
 
-  // Check if route needs protection
   const isProtected = PROTECTED_PREFIXES.some((prefix) =>
     pathname.startsWith(prefix)
   );
-
   if (!isProtected) return NextResponse.next();
 
-  // Validate JWT from cookie
   const token = req.cookies.get("scrrs_token")?.value;
 
   if (!token) {
@@ -39,30 +26,32 @@ export function middleware(req: NextRequest) {
     );
   }
 
-  const payload = verifyToken(token);
+  try {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+    const { payload } = await jwtVerify(token, secret);
 
-  if (!payload) {
+    const role = payload.role as Role;
+
+    if (pathname.startsWith("/api/admin") && role !== "admin") {
+      return NextResponse.json(
+        { success: false, error: "Admin access required" },
+        { status: 403 }
+      );
+    }
+
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set("x-user-id", payload.id as string);
+    requestHeaders.set("x-user-email", payload.email as string);
+    requestHeaders.set("x-user-role", role);
+
+    return NextResponse.next({ request: { headers: requestHeaders } });
+
+  } catch {
     return NextResponse.json(
       { success: false, error: "Invalid or expired token" },
       { status: 401 }
     );
   }
-
-  // Admin-only routes
-  if (pathname.startsWith("/api/admin") && payload.role !== "admin") {
-    return NextResponse.json(
-      { success: false, error: "Admin access required" },
-      { status: 403 }
-    );
-  }
-
-  // Forward user info via headers to API routes
-  const requestHeaders = new Headers(req.headers);
-  requestHeaders.set("x-user-id", payload.id);
-  requestHeaders.set("x-user-email", payload.email);
-  requestHeaders.set("x-user-role", payload.role);
-
-  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {
