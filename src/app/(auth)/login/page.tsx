@@ -16,13 +16,13 @@ export default function Login() {
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!authLoading && isAuthenticated) {
       router.replace("/dashboard");
     }
-  }, [isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, router]);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -18,13 +18,13 @@ export default function SignUp() {
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { signup, isAuthenticated } = useAuth();
+  const { signup, isAuthenticated, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!authLoading && isAuthenticated) {
       router.replace("/dashboard");
     }
-  }, [isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, router]);
 
   const strength = scorePassword(password);
 

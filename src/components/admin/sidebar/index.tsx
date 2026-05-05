@@ -60,7 +60,7 @@ export default function AdminSidebar() {
     await authApi.logout();
     logoutContext();
     toast.success("Logged out");
-    router.push("/login");
+    router.replace("/login");
   };
 
   return (

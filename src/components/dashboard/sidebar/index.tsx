@@ -33,8 +33,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { clearAuthCookie } from "@/lib/auth-server";
 import { toast } from "sonner";
+import { authApi } from "@/lib/api";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -50,8 +50,8 @@ const items = [
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
-  const router=useRouter();
-  const { user } = useAuth();
+  const router = useRouter();
+  const { user, logout: logoutContext } = useAuth();
   const { getShortName, getDisplayName } = userAccessor;
   const name = user?.name || "";
 
@@ -61,11 +61,11 @@ export default function DashboardSidebar() {
   const isActive = (path: string) =>
     path === "/" ? pathname === "/" : pathname.startsWith(path);
 
-
-  async function logout(){
+  async function logout() {
     try {
-      await clearAuthCookie();
-      router.push("/");
+      await authApi.logout();
+      logoutContext();
+      router.replace("/login");
       toast.success("Successfully logged out.");
     } catch (error) {
       toast.error("Failed to logout. Please try again.");

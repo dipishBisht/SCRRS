@@ -48,6 +48,6 @@ export async function clearAuthCookie(): Promise<void> {
  * Check if the user is authenticated (token exists & valid)
  */
 export async function isAuthenticated(): Promise<boolean> {
-  const token = getTokenFromCookies();
+  const token = await getTokenFromCookies();
   return token !== null;
 }

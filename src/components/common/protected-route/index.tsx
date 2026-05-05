@@ -11,14 +11,12 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!loading) {
       if (!isAuthenticated) {
-        router.push("/login");
-      } else if (user?.role === "admin") {
-        router.push("/admin");
+        router.replace("/login");
       }
     }
   }, [loading, isAuthenticated, user, router]);
 
-  if (loading) return <div>Loading...</div>
+  if (loading) return <div>Loading...</div>;
   if (!isAuthenticated) return null;
 
   return <>{children}</>;
